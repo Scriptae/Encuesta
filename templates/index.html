@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Encuesta sobre Tecnología</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <h1>Encuesta: ¿En qué debería centrarse la tecnología?</h1>
+
+  <form id="formulario">
+    <input type="text" id="nombre" placeholder="Tu nombre" required>
+    <input type="text" id="lugar" placeholder="Dónde vives" required><br><br>
+
+    <label><input type="radio" name="opcion" value="A" required> A. Fortalecer la salud pública...</label><br>
+    <label><input type="radio" name="opcion" value="B"> B. Optimizar los procesos sociales...</label><br>
+    <label><input type="radio" name="opcion" value="C"> C. Transformar los sistemas productivos...</label><br>
+    <label><input type="radio" name="opcion" value="D"> D. Mitigar el impacto ambiental...</label><br><br>
+
+    <button type="submit">Votar</button>
+  </form>
+
+  <h2>Resultados:</h2>
+  <div id="resultados"></div>
+
+  <script>
+    const form = document.getElementById("formulario");
+    const resultadosDiv = document.getElementById("resultados");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const nombre = document.getElementById("nombre").value;
+      const lugar = document.getElementById("lugar").value;
+      const opcion = document.querySelector('input[name="opcion"]:checked').value;
+
+      await fetch("/votar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nombre, lugar, opcion }),
+      });
+
+      cargarResultados();
+    });
+
+    async function cargarResultados() {
+      const res = await fetch("/resultados");
+      const data = await res.json();
+      resultadosDiv.innerHTML = `
+        <p>Total de votos: ${data.total}</p>
+        <ul>
+          <li>A: ${data.porcentajes.A}%</li>
+          <li>B: ${data.porcentajes.B}%</li>
+          <li>C: ${data.porcentajes.C}%</li>
+          <li>D: ${data.porcentajes.D}%</li>
+        </ul>
+      `;
+    }
+
+    cargarResultados();
+  </script>
+</body>
+</html>
